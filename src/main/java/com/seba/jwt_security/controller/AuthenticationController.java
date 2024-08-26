@@ -1,9 +1,6 @@
 package com.seba.jwt_security.controller;
 
-import com.seba.jwt_security.security.request.AuthenticationRequest;
-import com.seba.jwt_security.security.request.PasswordChangeRequest;
-import com.seba.jwt_security.security.request.RefreshTokenRequest;
-import com.seba.jwt_security.security.request.RegisterRequest;
+import com.seba.jwt_security.security.request.*;
 import com.seba.jwt_security.security.response.AuthenticationResponse;
 import com.seba.jwt_security.security.response.RefreshTokenResponse;
 import com.seba.jwt_security.security.response.RegisterResponse;
@@ -13,6 +10,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -68,5 +67,15 @@ public class AuthenticationController {
             @RequestBody PasswordChangeRequest request) {
         log.info(TAG + "change password:");
         authenticationService.changePassword(request, SecurityHolder.getPrincipal());
+    }
+
+   // @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/set-role/{userId}")
+    public ResponseEntity<String> setRole(
+            @PathVariable Long userId,
+            @RequestBody SetRoleRequest setRoleRequest) {
+        log.info(TAG + "set role for userId:" + userId);
+        authenticationService.updateUserRole(userId, setRoleRequest.getRole());
+        return ResponseEntity.ok("Role updated successfully");
     }
 }

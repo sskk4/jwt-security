@@ -33,7 +33,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html" ).permitAll()
-                        //todo: hide this in another class in utils
+                        //todo: hide this in another class in utils package
+                        .requestMatchers("/api/v1/demo/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

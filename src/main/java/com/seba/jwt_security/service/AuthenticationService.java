@@ -1,5 +1,6 @@
 package com.seba.jwt_security.service;
 
+import com.seba.jwt_security.exception.error.ResourceNotFoundException;
 import com.seba.jwt_security.exception.error.UserFailedAuthentication;
 import com.seba.jwt_security.model.RefreshToken;
 import com.seba.jwt_security.repository.RefreshTokenRepository;
@@ -23,7 +24,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -113,6 +116,8 @@ public class AuthenticationService {
     private AuthenticationResponse getAuthDto(User user) {
             log.info(TAG + "Get authentication dto for user with email: {}", user.getEmail());
 
+        refreshTokenService.deleteRefreshToken(user);
+
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = refreshTokenService.generateRefreshToken(user);
 
@@ -120,7 +125,15 @@ public class AuthenticationService {
                     .accessToken(jwtToken)
                     .refreshToken(refreshToken.getToken())
                     .userId(user.getId())
-                    .roles(List.of(user.getRole().name()))
+                    .role(user.getRole().name())
                     .build();
     }
+
+    public void updateUserRole(Long userId, Role role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRole(role);
+        userRepository.save(user);
+    }
+
 }

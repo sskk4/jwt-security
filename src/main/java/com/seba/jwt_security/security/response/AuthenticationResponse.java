@@ -17,5 +17,5 @@ public class AuthenticationResponse {
     private String accessToken;
     private UUID refreshToken;
     private Long userId;
-    private List<String> roles;
+    private String role;
 }

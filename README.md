@@ -6,22 +6,25 @@
     |  |\     / |  |  
 /\__|  | \/\_/  |__|  
 \______|
+springboot 3, spring security 6, 
+lombok, mysql, swagger doc,
+jwt tokens, refresh tokens
 ~~~
 
-springboot 3, spring security 6, 
-lombok, mysql, swagger doc
 
-## functionality
 
-- login/register with using jwt token
+## endpoints:
+
+- register
+- login
 - logout
-- refresh tokens(need to debug)
+- refresh tokens
 - change password
+- roles (user/admin)
 
 ### todo:
 ~~~
-- roles admin/user
-- activation and recovery password by emails 
+- email service (activation, recovery) 
 ~~~
 
 ### sources:
