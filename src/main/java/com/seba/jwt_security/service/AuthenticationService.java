@@ -7,6 +7,13 @@ import com.seba.jwt_security.security.*;
 import com.seba.jwt_security.model.Role;
 import com.seba.jwt_security.model.User;
 import com.seba.jwt_security.repository.UserRepository;
+import com.seba.jwt_security.security.request.AuthenticationRequest;
+import com.seba.jwt_security.security.request.PasswordChangeRequest;
+import com.seba.jwt_security.security.request.RefreshTokenRequest;
+import com.seba.jwt_security.security.request.RegisterRequest;
+import com.seba.jwt_security.security.response.AuthenticationResponse;
+import com.seba.jwt_security.security.response.RefreshTokenResponse;
+import com.seba.jwt_security.security.response.RegisterResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +38,7 @@ public class AuthenticationService {
     private final RefreshTokenService refreshTokenService;
 
     public RegisterResponse register(RegisterRequest request) {
+        log.info(TAG + "Create new user");
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
@@ -48,6 +56,7 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        log.info(TAG + "Authenticate");
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -79,7 +88,7 @@ public class AuthenticationService {
 
         if(!refreshTokenService.checkIfTokenValid(UUID.fromString(request.getRefreshToken()), user))
                 throw new UserFailedAuthentication("Authentication failed");
-        
+
         refreshTokenService.deleteRefreshToken(user);
 
         String jwtToken = jwtService.generateToken(user);
@@ -89,6 +98,16 @@ public class AuthenticationService {
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken.getToken())
                 .build();
+    }
+
+    public void changePassword(PasswordChangeRequest request, CustomPrincipal principal) {
+        log.info(TAG + "Change password for user {}", principal.getName());
+
+        User user = userRepository.getUser(principal.getUserId());
+        if(!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword()))
+            throw new UserFailedAuthentication("Password does not match");
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 
     private AuthenticationResponse getAuthDto(User user) {

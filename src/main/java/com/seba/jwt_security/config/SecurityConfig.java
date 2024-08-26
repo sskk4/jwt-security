@@ -28,12 +28,12 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("" +
-                                "/api/v1/auth/refresh",
-                                "/api/v1/auth/**",
+                        .requestMatchers("/api/v1/auth/**",
+                                "api/v1/auth/pw/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html" ).permitAll()
+                        //todo: hide this in another class in utils
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

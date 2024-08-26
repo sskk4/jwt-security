@@ -1,17 +1,16 @@
-package com.seba.jwt_security.security;
+package com.seba.jwt_security.security.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefreshTokenRequest {
-    private String email;
-    private String refreshToken;
+public class AuthenticationRequest {
+
+ private String email;
+ String password;
 }

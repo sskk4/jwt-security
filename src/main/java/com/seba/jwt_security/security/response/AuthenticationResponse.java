@@ -1,4 +1,4 @@
-package com.seba.jwt_security.security;
+package com.seba.jwt_security.security.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

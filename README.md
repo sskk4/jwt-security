@@ -14,15 +14,14 @@ lombok, mysql, swagger doc
 ## functionality
 
 - login/register with using jwt token
-- 
-- 
+- logout
+- refresh tokens(need to debug)
+- change password
 
 ### todo:
 ~~~
-- logout
-- refresh tokens
 - roles admin/user
-- activation and recovery by emails 
+- activation and recovery password by emails 
 ~~~
 
 ### sources:

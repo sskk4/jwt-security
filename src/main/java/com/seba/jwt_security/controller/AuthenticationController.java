@@ -1,6 +1,12 @@
 package com.seba.jwt_security.controller;
 
-import com.seba.jwt_security.security.*;
+import com.seba.jwt_security.security.request.AuthenticationRequest;
+import com.seba.jwt_security.security.request.PasswordChangeRequest;
+import com.seba.jwt_security.security.request.RefreshTokenRequest;
+import com.seba.jwt_security.security.request.RegisterRequest;
+import com.seba.jwt_security.security.response.AuthenticationResponse;
+import com.seba.jwt_security.security.response.RefreshTokenResponse;
+import com.seba.jwt_security.security.response.RegisterResponse;
 import com.seba.jwt_security.service.AuthenticationService;
 import com.seba.jwt_security.util.SecurityHolder;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,18 +29,18 @@ public class AuthenticationController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Register user and get response")
     @PostMapping("/register")
-    public RegisterResponse login(
+    public RegisterResponse register(
         @RequestBody RegisterRequest request) {
-        log.info(TAG + "Register");
+        log.info(TAG + "register:");
         return authenticationService.register(request);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Login user and get response")
+    @Operation(summary = "login user")
     @PostMapping("/authenticate")
     public AuthenticationResponse login(
             @RequestBody AuthenticationRequest request) {
-        log.info(TAG + "authenticate");
+        log.info(TAG + "authenticate:");
         return authenticationService.authenticate(request);
     }
 
@@ -42,16 +48,25 @@ public class AuthenticationController {
     @Operation(summary = "logout user, inactive refresh token")
     @GetMapping("/logout")
     public void logout() {
-        log.info(TAG + "Logout");
+        log.info(TAG + "logout:");
         authenticationService.logout(SecurityHolder.getPrincipal());
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Refresh token and get response")
+    @Operation(summary = "refresh token and get response")
     @PostMapping("/refresh")
     public RefreshTokenResponse refreshToken(
             @RequestBody RefreshTokenRequest request) {
         log.info(TAG + "refresh");
         return authenticationService.refreshToken(request);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "change user password")
+    @PostMapping("/pw/change")
+    public void changePassword(
+            @RequestBody PasswordChangeRequest request) {
+        log.info(TAG + "change password:");
+        authenticationService.changePassword(request, SecurityHolder.getPrincipal());
     }
 }

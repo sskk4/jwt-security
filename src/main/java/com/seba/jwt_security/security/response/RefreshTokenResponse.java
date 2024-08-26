@@ -1,4 +1,4 @@
-package com.seba.jwt_security.security;
+package com.seba.jwt_security.security.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RefreshTokenResponse {
+
     private String accessToken;
     private UUID refreshToken;
 }
