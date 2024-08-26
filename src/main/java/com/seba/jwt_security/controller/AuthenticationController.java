@@ -42,12 +42,12 @@ public class AuthenticationController {
     @Operation(summary = "logout user, inactive refresh token")
     @GetMapping("/logout")
     public void logout() {
-        log.info(TAG + "logout");
+        log.info(TAG + "Logout");
         authenticationService.logout(SecurityHolder.getPrincipal());
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "refresh token and get response")
+    @Operation(summary = "Refresh token and get response")
     @PostMapping("/refresh")
     public RefreshTokenResponse refreshToken(
             @RequestBody RefreshTokenRequest request) {

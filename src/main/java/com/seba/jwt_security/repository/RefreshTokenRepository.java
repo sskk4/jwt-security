@@ -2,7 +2,9 @@ package com.seba.jwt_security.repository;
 
 import com.seba.jwt_security.model.RefreshToken;
 import com.seba.jwt_security.model.User;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -15,10 +17,8 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     Optional<RefreshToken> findByToken(UUID refreshToken);
 
-    @Query("SELECT r " +
-            "FROM RefreshToken r " +
-            "WHERE r.user.id = :userId")
-    RefreshToken findByUser(@Param("userId") Long userId);
-
-    void deleteAllByUser(User user);
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM RefreshToken r WHERE r.user.id = :userId")
+    void deleteAllByUserId(@Param("userId") Long userId);
 }

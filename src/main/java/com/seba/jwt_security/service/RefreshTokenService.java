@@ -56,11 +56,9 @@ public class RefreshTokenService {
     }
 
     public void deleteRefreshToken(User user){
-        log.info(TAG + "Delete refresh token for user with email: {}", user.getEmail());
-
-        RefreshToken refreshToken = refreshTokenRepository.findByUser(user.getId());
-        refreshTokenRepository.deleteById(refreshToken.getId());
-        log.info(TAG + "Refresh tokens deleted");
+        log.info(TAG + "Delete refresh token for user with id: {}, email: {}",user.getId(), user.getEmail());
+        refreshTokenRepository.deleteAllByUserId(user.getId());
+        log.info(TAG + "All refresh tokens deleted");
     }
 
 }

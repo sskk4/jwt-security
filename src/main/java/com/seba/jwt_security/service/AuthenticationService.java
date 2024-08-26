@@ -61,11 +61,12 @@ public class AuthenticationService {
     }
 
     public void logout(CustomPrincipal principal) {
-        log.info("Logging out user {}", principal.getName());
+        log.info(TAG + "Logging out user {}", principal.getName());
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UserFailedAuthentication("Authentication failed"));
         refreshTokenService.deleteRefreshToken(user);
         SecurityContextHolder.clearContext();
+        log.info(TAG + "logged out user {}", principal.getName());
     }
 
     private final RefreshTokenRepository refreshTokenRepository;
@@ -78,14 +79,8 @@ public class AuthenticationService {
 
         if(!refreshTokenService.checkIfTokenValid(UUID.fromString(request.getRefreshToken()), user))
                 throw new UserFailedAuthentication("Authentication failed");
-
-        RefreshToken rf = refreshTokenService.getTokenByToken(UUID.fromString(request.getRefreshToken())).get();
-        refreshTokenRepository.delete(rf);
-
-        // error was here haha
-        /*
+        
         refreshTokenService.deleteRefreshToken(user);
-        */
 
         String jwtToken = jwtService.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user);

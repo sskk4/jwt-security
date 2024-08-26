@@ -1,5 +1,6 @@
 package com.seba.jwt_security.security;
 
+import com.seba.jwt_security.model.User;
 import com.seba.jwt_security.service.JwtService;
 import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.FilterChain;
@@ -39,10 +40,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             userEmail = jwtService.extractUsername(jwt);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+
                 if (jwtService.isTokenValid(jwt, userDetails)) {
+                    User user = (User) userDetails;  // Assuming you have a UserDetails implementation that extends User
+                    CustomPrincipal principal = new CustomPrincipal(user);
+
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
+                            principal,
                             null,
                             userDetails.getAuthorities()
                     );
@@ -53,7 +59,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }
