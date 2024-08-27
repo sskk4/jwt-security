@@ -1,5 +1,6 @@
 package com.seba.jwt_security.security.response;
 
+import com.seba.jwt_security.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,5 +15,6 @@ public class RegisterResponse {
         private String firstname;
         private String lastname;
         private String email;
-        // todo role
+        private boolean isActive;
+        private Role role;
 }

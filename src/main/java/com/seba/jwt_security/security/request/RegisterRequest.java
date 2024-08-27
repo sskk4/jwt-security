@@ -1,5 +1,6 @@
 package com.seba.jwt_security.security.request;
 
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,4 +16,5 @@ public class RegisterRequest {
     private String lastname;
     private String email;
     private String password;
+    private boolean isActive;
 }

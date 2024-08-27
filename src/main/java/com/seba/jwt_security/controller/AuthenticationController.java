@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
-
     private final String TAG = "AUTHENTICATION CONTROLLER - ";
 
     private final AuthenticationService authenticationService;
@@ -100,6 +99,15 @@ public class AuthenticationController {
             @RequestBody PasswordRecoveryRequest request){
         log.info(TAG + "recovery password");
         authenticationService.recoveryPassword(token, request.getPassword());
+    }
 
+    @Operation(summary = "Activate user account by link from email")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/activate/{token}")
+    public RegisterRequest activate(
+            @PathVariable("token") String token) {
+        log.info(TAG + "Activate new user");
+        authenticationService.activate(token);
+        return null;
     }
 }

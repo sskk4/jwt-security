@@ -35,6 +35,9 @@ public class User implements UserDetails {
 
     private String password;
 
+    @Column(name = "is_active")
+    boolean isActive;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;

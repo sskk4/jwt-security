@@ -3,6 +3,8 @@ package com.seba.jwt_security.service;
 import com.seba.jwt_security.email.EmailService;
 import com.seba.jwt_security.email.EmailStructure;
 import com.seba.jwt_security.email.EmailType;
+import com.seba.jwt_security.exception.error.ObjectAlreadyExistException;
+import com.seba.jwt_security.exception.error.ResourceNotFoundException;
 import com.seba.jwt_security.exception.error.UserFailedAuthentication;
 import com.seba.jwt_security.model.RefreshToken;
 import com.seba.jwt_security.repository.RefreshTokenRepository;
@@ -42,23 +44,54 @@ public class AuthenticationService {
     private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
 
+
     public RegisterResponse register(RegisterRequest request) {
         log.info(TAG + "Create new user");
+
+        if(userRepository.existsByEmail(request.getEmail())) {
+            throw new ObjectAlreadyExistException("User with email: {} is already exist");
+        }
 
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .isActive(false)
                 .role(Role.USER)
                 .build();
+
         userRepository.save(user);
+        RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user);
+
+        emailService.createMail(
+                EmailStructure.builder()
+                        .email(user.getEmail())
+                        .emailType(EmailType.CONFIRM_EMAIL)
+                        .build(),
+                emailService.createBody(
+                        EmailType.CONFIRM_EMAIL,
+                        SecurityUtils.ENDPOINT_ACTIVATE + refreshToken.getToken().toString())
+        );
 
         return RegisterResponse.builder()
+                .isActive(request.isActive())
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .email(request.getEmail())
+                .role(Role.USER)
                 .build();
+    }
+
+    public void activate(String token) {
+        log.info(TAG + "Activate user");
+
+        RefreshToken refreshToken = refreshTokenService.getTokenByToken(UUID.fromString(token))
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid token"));
+        User user = refreshToken.getUser();
+        user.setActive(true);
+        refreshTokenService.deleteRefreshToken(user);
+        userRepository.save(user);
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -134,13 +167,6 @@ public class AuthenticationService {
                     .build();
     }
 
-    public void updateUserRole(Long userId, Role role) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserFailedAuthentication("User not found"));
-        user.setRole(role);
-        userRepository.save(user);
-    }
-
     @SneakyThrows
     public void forgotPassword(String email) {
         log.info(TAG + "Forgot password for user {}", email);
@@ -183,5 +209,12 @@ public class AuthenticationService {
                         .build(),
                 emailService.createBody(
                         EmailType.PASSWORD_WAS_CHANGED));
+    }
+
+    public void updateUserRole(Long userId, Role role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserFailedAuthentication("User not found"));
+        user.setRole(role);
+        userRepository.save(user);
     }
 }

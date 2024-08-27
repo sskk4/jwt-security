@@ -11,8 +11,6 @@ lombok, mysql, swagger doc,
 jwt tokens, refresh tokens
 ~~~
 
-
-
 ## endpoints:
 
 - register
@@ -21,12 +19,9 @@ jwt tokens, refresh tokens
 - refresh tokens
 - change password
 - roles (user/admin)
-- email service (recovery)
+- email recovery
+- email activation
 
-### todo:
-~~~
-- email service (activation) 
-~~~
 
 ### sources:
 [amigoscode](https://www.youtube.com/watch?v=KxqlJblhzfI)
