@@ -22,6 +22,5 @@ jwt tokens, refresh tokens
 - email recovery
 - email activation
 
-
 ### sources:
 [amigoscode](https://www.youtube.com/watch?v=KxqlJblhzfI)
