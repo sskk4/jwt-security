@@ -44,7 +44,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    User user = (User) userDetails;  // Assuming you have a UserDetails implementation that extends User
+                    User user = (User) userDetails;
+
+                    if (!user.isActive()) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Account is not activated");
+                        return;
+                    }
+
                     CustomPrincipal principal = new CustomPrincipal(user);
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

@@ -3,6 +3,7 @@ package com.seba.jwt_security.service;
 import com.seba.jwt_security.email.EmailService;
 import com.seba.jwt_security.email.EmailStructure;
 import com.seba.jwt_security.email.EmailType;
+import com.seba.jwt_security.exception.error.AccountNotActivatedException;
 import com.seba.jwt_security.exception.error.ObjectAlreadyExistException;
 import com.seba.jwt_security.exception.error.ResourceNotFoundException;
 import com.seba.jwt_security.exception.error.UserFailedAuthentication;
@@ -20,6 +21,7 @@ import com.seba.jwt_security.security.response.AuthenticationResponse;
 import com.seba.jwt_security.security.response.RefreshTokenResponse;
 import com.seba.jwt_security.security.response.RegisterResponse;
 import com.seba.jwt_security.util.SecurityUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +46,7 @@ public class AuthenticationService {
     private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
 
-
+    @Transactional
     public RegisterResponse register(RegisterRequest request) {
         log.info(TAG + "Create new user");
 
@@ -94,6 +96,7 @@ public class AuthenticationService {
         userRepository.save(user);
     }
 
+    @SneakyThrows
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         log.info(TAG + "Authenticate");
 
@@ -105,6 +108,10 @@ public class AuthenticationService {
         );
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
+
+        if (!user.isActive()) {
+            throw new AccountNotActivatedException("User account is not activated");
+        }
 
         return getAuthDto(user);
     }
