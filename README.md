@@ -21,10 +21,11 @@ jwt tokens, refresh tokens
 - refresh tokens
 - change password
 - roles (user/admin)
+- email service (recovery)
 
 ### todo:
 ~~~
-- email service (activation, recovery) 
+- email service (activation) 
 ~~~
 
 ### sources:

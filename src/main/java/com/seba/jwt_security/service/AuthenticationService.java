@@ -1,6 +1,8 @@
 package com.seba.jwt_security.service;
 
-import com.seba.jwt_security.exception.error.ResourceNotFoundException;
+import com.seba.jwt_security.email.EmailService;
+import com.seba.jwt_security.email.EmailStructure;
+import com.seba.jwt_security.email.EmailType;
 import com.seba.jwt_security.exception.error.UserFailedAuthentication;
 import com.seba.jwt_security.model.RefreshToken;
 import com.seba.jwt_security.repository.RefreshTokenRepository;
@@ -15,7 +17,9 @@ import com.seba.jwt_security.security.request.RegisterRequest;
 import com.seba.jwt_security.security.response.AuthenticationResponse;
 import com.seba.jwt_security.security.response.RefreshTokenResponse;
 import com.seba.jwt_security.security.response.RegisterResponse;
+import com.seba.jwt_security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,10 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -39,9 +40,11 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
+    private final EmailService emailService;
 
     public RegisterResponse register(RegisterRequest request) {
         log.info(TAG + "Create new user");
+
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
@@ -60,6 +63,7 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         log.info(TAG + "Authenticate");
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -74,6 +78,7 @@ public class AuthenticationService {
 
     public void logout(CustomPrincipal principal) {
         log.info(TAG + "Logging out user {}", principal.getName());
+
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UserFailedAuthentication("Authentication failed"));
         refreshTokenService.deleteRefreshToken(user);
@@ -114,7 +119,7 @@ public class AuthenticationService {
     }
 
     private AuthenticationResponse getAuthDto(User user) {
-            log.info(TAG + "Get authentication dto for user with email: {}", user.getEmail());
+        log.info(TAG + "Get authentication dto for user with email: {}", user.getEmail());
 
         refreshTokenService.deleteRefreshToken(user);
 
@@ -131,9 +136,52 @@ public class AuthenticationService {
 
     public void updateUserRole(Long userId, Role role) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserFailedAuthentication("User not found"));
         user.setRole(role);
         userRepository.save(user);
     }
 
+    @SneakyThrows
+    public void forgotPassword(String email) {
+        log.info(TAG + "Forgot password for user {}", email);
+
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserFailedAuthentication("user not found"));
+        refreshTokenService.deleteRefreshToken(user);
+        RefreshToken refreshToken = refreshTokenService.generateRefreshToken(user);
+
+        emailService.createMail(
+                EmailStructure.builder()
+                        .email(user.getEmail())
+                        .emailType(EmailType.FORGOT_PASSWORD)
+                        .build(),
+                emailService.createBody(
+                        EmailType.FORGOT_PASSWORD,
+                        SecurityUtils.ENDPOINT_RECOVERY + refreshToken.getToken().toString())
+        );
+    }
+
+    @SneakyThrows
+    public void recoveryPassword(String token, String password) {
+        log.info(TAG + "Recovery password for user with token: {}", token);
+
+        RefreshToken tokenFromDB = refreshTokenService.getTokenByToken(UUID.fromString(token))
+                .orElseThrow(() -> new UserFailedAuthentication("Authentication failed"));
+
+        var user = userRepository.findById(tokenFromDB.getUser().getId())
+                .orElseThrow(() -> new UserFailedAuthentication("user not found"));
+
+        refreshTokenService.deleteRefreshToken(user);
+
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+
+        emailService.createMail(
+                EmailStructure.builder()
+                        .email(user.getEmail())
+                        .emailType(EmailType.PASSWORD_WAS_CHANGED)
+                        .build(),
+                emailService.createBody(
+                        EmailType.PASSWORD_WAS_CHANGED));
+    }
 }

@@ -1,5 +1,7 @@
 package com.seba.jwt_security.controller;
 
+import com.seba.jwt_security.email.EmailRequest;
+import com.seba.jwt_security.email.PasswordRecoveryRequest;
 import com.seba.jwt_security.security.request.*;
 import com.seba.jwt_security.security.response.AuthenticationResponse;
 import com.seba.jwt_security.security.response.RefreshTokenResponse;
@@ -70,6 +72,8 @@ public class AuthenticationController {
     }
 
    // @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "set role with UserId")
     @PutMapping("/set-role/{userId}")
     public ResponseEntity<String> setRole(
             @PathVariable Long userId,
@@ -77,5 +81,25 @@ public class AuthenticationController {
         log.info(TAG + "set role for userId:" + userId);
         authenticationService.updateUserRole(userId, setRoleRequest.getRole());
         return ResponseEntity.ok("Role updated successfully");
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "send link to email to recovery password")
+    @PostMapping("/pw/recovery")
+    public void sendLinkToRecoveryPassword(
+            @RequestBody EmailRequest request) {
+        log.info(TAG + "send link to email {} to recovery password", request.getEmail());
+        authenticationService.forgotPassword(request.getEmail());
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Change password using token and link from email")
+    @PostMapping("/pw/recovery/{token}")
+    public void recoveryPassword(
+            @PathVariable("token") String token,
+            @RequestBody PasswordRecoveryRequest request){
+        log.info(TAG + "recovery password");
+        authenticationService.recoveryPassword(token, request.getPassword());
+
     }
 }
